@@ -1,0 +1,46 @@
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.pyo
+*.pyd
+*.pyc
+
+# Environments
+myenv/
+venv/
+ENV/
+.venv/
+
+# Jupyter
+.ipynb_checkpoints/
+
+# Logs
+*.log
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# VS Code
+.vscode/
+
+# Mac/Linux
+*.swp
+*~
+
+# Python Packages
+*.egg
+*.egg-info/
+dist/
+build/
+.eggs/
+
+# Data / Model files (Sensitive / Large)
+*.pkl
+*.csv
+*.h5
+*.joblib
+
+# Static / Upload files
+/static/uploads/

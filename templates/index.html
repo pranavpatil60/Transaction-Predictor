@@ -1,0 +1,91 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Transaction Predictor AI</title>
+    <link rel="stylesheet" href="/static/style.css">
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;600;800&display=swap" rel="stylesheet">
+</head>
+<body>
+    <div class="sidebar">
+        <div class="bank-logo">CORE-BANK AI</div>
+        <div class="menu-item active">Transaction Analysis</div>
+    </div>
+
+    <div class="main">
+        <div class="header">
+            <div>
+                <h2 style="margin:0">Consumer Behavior Assessment</h2>
+                <p style="color:#64748b; margin-top:5px">Targeting Transactors based on AI Confidence</p>
+            </div>
+        </div>
+
+        <div class="card">
+            <h3>..... Upload</h3>
+            <form action="/predict" method="post" enctype="multipart/form-data">
+                <label for="file" class="upload-box">
+                    <span class="upload-icon">📂</span>
+                    <strong id="file-label">Click to upload Customer CSV</strong>
+                    <input type="file" name="file" accept=".csv" required id="file" style="display:none">
+                </label>
+                <button type="submit" class="btn-run">🚀 Run Prediction Scan</button>
+            </form>
+        </div>
+
+        {% if result %}
+        <div class="stats-grid">
+            <div class="stat-card">
+                <div class="stat-label">Total Analyzed</div>
+                <div class="stat-value">{{ total }}</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-label">Will Transact (1)</div>
+                <div class="stat-value" style="color:var(--success)">{{ will_transact }}</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-label">No Transaction (0)</div>
+                <div class="stat-value" style="color:var(--danger)">{{ no_transact }}</div>
+            </div>
+            <div class="stat-card" style="display:flex; align-items:center; justify-content:center;">
+                <a href="/download" class="btn-download">📥 Download '1' List</a>
+            </div>
+        </div>
+
+        <div class="card">
+            <h3>Detailed Analysis (Grey Area: 0.20 - {{ threshold }})</h3>
+            <div class="table-container">
+                <table class="bank-table">
+                    <thead>
+                        <tr>
+                            <th>User ID</th>
+                            <th>Confidence Score</th>
+                            <th>Behavior Prediction</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for row in data %}
+                        <tr>
+                            <td><strong>{{ row.id }}</strong></td>
+                            <td>{{ row.conf }}</td>
+                            <td>
+                                <span class="status-pill status-{{ row.status[:1] }}">
+                                    {{ row.status }}
+                                </span>
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+        {% endif %}
+    </div>
+
+    <script>
+        document.getElementById('file').onchange = function() {
+            if(this.files[0]) document.getElementById('file-label').innerText = this.files[0].name;
+        };
+    </script>
+</body>
+</html>
