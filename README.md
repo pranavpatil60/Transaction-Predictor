@@ -20,8 +20,4 @@ In most ML models, the $0.20$ to $0.80$ probability zone is a "Uncertainty Zone.
 - **Data Handling:** Pandas, NumPy
 - **Frontend:** HTML5, CSS3 (Modern UI), Jinja2 Templates
 
-## 🚀 Quick Start
 
-1. **Clone the Repo:**
-   ```bash
-   git clone [https://github.com/your-username/ADF-Transaction-Predictor-SFWC.git](https://github.com/your-username/ADF-Transaction-Predictor-SFWC.git)
