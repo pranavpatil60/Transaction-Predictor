@@ -26,9 +26,9 @@ try:
         threshold = pickle.load(f)
     with open("feature_order.pkl", "rb") as f:
         feature_order = pickle.load(f)
-    print("✅ Model & Feature Configuration Loaded")
+    print(" Model & Feature Configuration Loaded")
 except Exception:
-    print("❌ Model load failed")
+    print(" Model load failed")
     traceback.print_exc()
     model, threshold, feature_order = None, 0.5, []
 
@@ -47,7 +47,7 @@ async def predict(request: Request):
         if not file or not file.filename.endswith(".csv"):
             return templates.TemplateResponse(
                 "index.html",
-                {"request": request, "error": "❌ Please upload a valid CSV"}
+                {"request": request, "error": " Please upload a valid CSV"}
             )
 
         df = pd.read_csv(file.file)
@@ -109,17 +109,17 @@ async def predict(request: Request):
         })
 
     except ClientDisconnect:
-        print("⚠️ Client disconnected before upload completed")
+        print(" Client disconnected before upload completed")
         return templates.TemplateResponse(
             "index.html",
-            {"request": request, "error": "❌ Upload interrupted. Please try again."}
+            {"request": request, "error": " Upload interrupted. Please try again."}
         )
 
     except Exception as e:
         traceback.print_exc()
         return templates.TemplateResponse(
             "index.html",
-            {"request": request, "error": f"❌ {str(e)}"}
+            {"request": request, "error": f" {str(e)}"}
         )
 
 @app.get("/download")
