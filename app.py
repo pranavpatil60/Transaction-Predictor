@@ -7,6 +7,8 @@ from fastapi import FastAPI, Request
 from fastapi.responses import HTMLResponse, StreamingResponse
 from fastapi.staticfiles import StaticFiles
 from fastapi.templating import Jinja2Templates
+from starlette.requests import ClientDisconnect  
+
 
 # ---------------- APP INIT ----------------
 app = FastAPI()
@@ -43,22 +45,31 @@ async def predict(request: Request):
         file = form.get("file")
 
         if not file or not file.filename.endswith(".csv"):
-            return templates.TemplateResponse("index.html", {"request": request, "error": "❌ Please upload a valid CSV"})
+            return templates.TemplateResponse(
+                "index.html",
+                {"request": request, "error": "❌ Please upload a valid CSV"}
+            )
 
         df = pd.read_csv(file.file)
-        if df.empty: raise ValueError("CSV is empty")
+        if df.empty:
+            raise ValueError("CSV is empty")
 
         # Handle ID column
         id_col = next((c for c in df.columns if "id" in c.lower()), None)
         df["USER_ID"] = df[id_col].astype(str) if id_col else [f"USR-{1000+i}" for i in range(len(df))]
 
-        # Feature Alignment
-        for col in feature_order:
-            if col not in df.columns: df[col] = 0
-        
+        # ---------------- Feature Alignment (Optimized) ----------------
+        missing_cols = set(feature_order) - set(df.columns)
+        if missing_cols:
+            df = pd.concat(
+                [df, pd.DataFrame(0, index=df.index, columns=list(missing_cols))],
+                axis=1
+            )
+        df = df.copy()  # de-fragment dataframe
+
         df_model = df[feature_order].apply(pd.to_numeric, errors="coerce").fillna(0)
 
-        # Prediction Logic
+        # ---------------- Prediction Logic ----------------
         try:
             proba = model.predict_proba(df_model)[:, 1]
         except:
@@ -66,9 +77,9 @@ async def predict(request: Request):
 
         df["Confidence"] = (proba * 100).round(2)
 
-        # --- LOGIC: 1 = Transact, 0 = No Transact, Between = Re-Verify ---
+        # Decision logic
         df["Decision"] = np.where(
-            proba >= threshold, "1 (WILL TRANSACTION)", 
+            proba >= threshold, "1 (WILL TRANSACTION)",
             np.where(proba < 0.2, "0 (NO TRANSACTION)", "RE-VERIFY")
         )
 
@@ -82,7 +93,7 @@ async def predict(request: Request):
         reverify = (df["Decision"] == "RE-VERIFY").sum()
 
         data_list = [
-            {"id": r["USER_ID"], "conf": f"{r['Confidence']}%", "status": r["Decision"]} 
+            {"id": r["USER_ID"], "conf": f"{r['Confidence']}%", "status": r["Decision"]}
             for _, r in df.iterrows()
         ]
 
@@ -97,15 +108,25 @@ async def predict(request: Request):
             "threshold": threshold
         })
 
+    except ClientDisconnect:
+        print("⚠️ Client disconnected before upload completed")
+        return templates.TemplateResponse(
+            "index.html",
+            {"request": request, "error": "❌ Upload interrupted. Please try again."}
+        )
+
     except Exception as e:
         traceback.print_exc()
-        return templates.TemplateResponse("index.html", {"request": request, "error": f"❌ {str(e)}"})
+        return templates.TemplateResponse(
+            "index.html",
+            {"request": request, "error": f"❌ {str(e)}"}
+        )
 
 @app.get("/download")
 async def download_results():
     if global_export_df.empty:
         return {"error": "No transactors found to download"}
-    
+
     stream = io.StringIO()
     global_export_df.to_csv(stream, index=False)
     response = StreamingResponse(iter([stream.getvalue()]), media_type="text/csv")
