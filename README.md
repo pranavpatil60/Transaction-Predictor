@@ -2,6 +2,9 @@
 
 This project is an advanced AI solution for **Imbalanced Dataset Classification** in financial transactions. Unlike traditional models that struggle with minority classes, this system uses a **Dual-Focal Framework** to specialize in Class 0 (Non-transactors) while resolving Class 1 (Transactors) through a secondary risk-weighted logic.
 
+Live Demo:
+🔗 https://customer-transaction-prediction.onrender.com
+
 ## 🧠 The Innovation: Grey Area Resolution
 In most ML models, the $0.20$ to $0.80$ probability zone is a "Uncertainty Zone." This project implements a **Secondary Feature Weighted Check (SFWC)**:
 - **Strong 0 Zone (< 0.20):** Classified as No Transaction.
